@@ -1,0 +1,42 @@
+[
+  {
+    "id": "123",
+    "avt": "avt1.jpg",
+    "description": "Problem with TikTok integration",
+    "priority": "Medium",
+    "status": "On hold",
+    "timeup": "10:32 AM"
+  },
+  {
+    "id": "124",
+    "avt": "avt2.jpg",
+    "description": "Cannot login to admin dashboard",
+    "priority": "High",
+    "status": "In progress",
+    "timeup": "11:05 AM"
+  },
+  {
+    "id": "125",
+    "avt": "avt3.jpg",
+    "description": "Payment gateway timeout issue",
+    "priority": "Critical",
+    "status": "Open",
+    "timeup": "09:45 AM"
+  },
+  {
+    "id": "126",
+    "avt": "avt4.jpg",
+    "description": "UI broken on mobile screen",
+    "priority": "Low",
+    "status": "Resolved",
+    "timeup": "08:20 AM"
+  },
+  {
+    "id": "127",
+    "avt": "avt5.jpg",
+    "description": "Email notification not sending",
+    "priority": "Medium",
+    "status": "In review",
+    "timeup": "02:10 PM"
+  }
+]
