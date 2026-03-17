@@ -5,8 +5,7 @@ const validateSchedule = async (scheduleData) => {
   const {
     ship_id,
     pilot_id,
-    departure_port_id,
-    arrival_port_id,
+
     departure_time,
     arrival_time,
   } = scheduleData;
@@ -41,32 +40,6 @@ const validateSchedule = async (scheduleData) => {
     return {
       status: false,
       message: "Pilot already has another schedule during this time",
-    };
-  }
-
-  // 3. kiểm tra cảng đi
-  const departurePortConflict = await knex("SCHEDULES")
-    .modify(timeOverlapQuery)
-    .where("departure_port_id", departure_port_id)
-    .first();
-
-  if (departurePortConflict) {
-    return {
-      status: false,
-      message: "Departure port already has a schedule at this time",
-    };
-  }
-
-  // 4. kiểm tra cảng đến
-  const arrivalPortConflict = await knex("SCHEDULES")
-    .modify(timeOverlapQuery)
-    .where("arrival_port_id", arrival_port_id)
-    .first();
-
-  if (arrivalPortConflict) {
-    return {
-      status: false,
-      message: "Arrival port already has a schedule at this time",
     };
   }
 

@@ -108,7 +108,7 @@ const admin = [
       {
         path: "schedules",
         name: "admin.schedules",
-        component: () => import("@/pages/schedules.vue"),
+        component: () => import("@/pages/schedules/index.vue"),
         meta: { title: "Schedules - CTU" },
       },
     ],
