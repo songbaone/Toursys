@@ -117,3 +117,51 @@ BEGIN
         INNER JOIN inserted i ON s.ship_id = i.ship_id;
 END;
 GO
+
+CREATE TABLE SCHEDULES
+(
+    schedule_id INT IDENTITY(1,1) PRIMARY KEY,
+
+    ship_id INT NOT NULL,
+
+    departure_port_id INT NOT NULL,
+    arrival_port_id INT NOT NULL,
+
+    pilot_id INT, -- 🔥 hoa tiêu
+
+    departure_time DATETIME2 NOT NULL,
+    arrival_time DATETIME2 NOT NULL,
+
+    status NVARCHAR(20) DEFAULT 'SCHEDULED',
+    notes NVARCHAR(255),
+
+    created_at DATETIME2 DEFAULT SYSDATETIME(),
+    updated_at DATETIME2,
+
+    CONSTRAINT FK_SCHEDULES_SHIPS
+        FOREIGN KEY (ship_id) REFERENCES SHIPS(ship_id),
+
+    CONSTRAINT FK_SCHEDULES_DEPARTURE_PORT
+        FOREIGN KEY (departure_port_id) REFERENCES PORTS(port_id),
+
+    CONSTRAINT FK_SCHEDULES_ARRIVAL_PORT
+        FOREIGN KEY (arrival_port_id) REFERENCES PORTS(port_id),
+
+    CONSTRAINT FK_SCHEDULES_PILOTS
+        FOREIGN KEY (pilot_id) REFERENCES USERS(user_id)
+);
+
+GO
+CREATE TRIGGER trg_schedules_update_updated_at
+ON SCHEDULES
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE s
+    SET updated_at = SYSDATETIME()
+    FROM SCHEDULES s
+        INNER JOIN inserted i ON s.schedule_id = i.schedule_id;
+END;
+GO

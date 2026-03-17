@@ -14,6 +14,9 @@ const routerPorts = require("./Routers/ports.route");
 //============== ROUTER FOR SHIPS===============
 const routerShips = require("./Routers/ships.route");
 
+// ============== ROUTER FOR SCHEDULES===============
+const routerSchedules = require("./Routers/schedules.route");
+
 const {
   resourceNotFound,
   methodNotAllowed,
@@ -50,6 +53,9 @@ app.use("/api/ports", routerPorts);
 
 //--------------------API FOR SHIPS---------------------
 app.use("/api/ships", routerShips);
+
+//--------------------API FOR SCHEDULES---------------------
+app.use("/api/schedules", routerSchedules);
 
 app.use(resourceNotFound);
 app.use(methodNotAllowed);
