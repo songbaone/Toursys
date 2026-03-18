@@ -128,9 +128,12 @@ const scheduleService = {
           "dp.port_name as departure_port",
           "ap.port_name as arrival_port",
           "p.full_name as pilot_name",
+          "p.user_id",
           "sc.departure_time",
           "sc.arrival_time",
           "sc.status",
+          "sc.created_at",
+          "sc.updated_at",
         )
         .orderBy("sc.schedule_id", "asc")
         .limit(itemsPerPage)

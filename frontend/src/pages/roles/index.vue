@@ -32,7 +32,7 @@
             </div>
 
             <!-- Body -->
-            <form @submit.prevent="submitUser" class="p-5 space-y-4">
+            <form @submit.prevent="submitRole" class="p-5 space-y-4">
               <!-- Full Name -->
               <div>
                 <label class="block text-sm mb-1">Role id</label>
@@ -184,7 +184,7 @@ const closeModal = () => {
     description: "",
   };
 };
-const submitUser = async () => {
+const submitRole = async () => {
   try {
     const res = await roleService.createRole(form.value);
     console.log("Role created successfully:", res.data);

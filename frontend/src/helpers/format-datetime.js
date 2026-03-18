@@ -14,6 +14,10 @@ const formatDate = {
   formatTime(time) {
     return moment.tz(time, "Asia/Ho_Chi_Minh").format("HH:mm");
   },
+
+  toSqlDateTime(date) {
+    return moment(date).tz("Asia/Ho_Chi_Minh").format("YYYY-MM-DD HH:mm:ss");
+  },
 };
 
 export default formatDate;
