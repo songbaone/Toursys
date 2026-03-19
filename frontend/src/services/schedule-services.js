@@ -13,7 +13,7 @@ class ScheduleService {
   }
 
   async getPilotMonthlyStats(params) {
-    return await this.api.get("/api/schedules/stats/pilot-monthly", { params });
+    return await this.api.get("/api/schedules/stats/pilot-monthly", params);
   }
 }
 
