@@ -7,6 +7,30 @@
           SCHEDULES MANAGEMENT
         </h1>
       </div>
+      <div class="flex gap-2">
+        <input
+          v-model="keyword"
+          @keyup.enter="searchSchedule"
+          type="text"
+          placeholder="Search port, ship name..."
+          class="border px-3 py-2 rounded-md text-sm w-64"
+        />
+
+        <button
+          @click="searchSchedule"
+          class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700"
+        >
+          Search
+        </button>
+
+        <button
+          v-if="keyword"
+          @click="clearSearch"
+          class="px-3 py-2 border rounded-md text-sm"
+        >
+          Clear
+        </button>
+      </div>
       <div>
         <button
           @click="openModal"
@@ -269,11 +293,11 @@
               <th scope="col" class="px-1 py-3 font-bold">Arrival time</th>
               <th scope="col" class="px-1 py-3 font-bold">Pilot</th>
 
-              <th scope="col" class="px-6 py-3 font-bold">Status</th>
-              <th scope="col" class="px-6 py-3 font-bold">Created at</th>
-              <th scope="col" class="px-6 py-3 font-bold">Updated at</th>
+              <th scope="col" class="px-1 py-3 font-bold">Status</th>
+              <th scope="col" class="px-1 py-3 font-bold">Created at</th>
+              <th scope="col" class="px-1 py-3 font-bold">Updated at</th>
 
-              <th scope="col" class="px-6 py-3 font-bold">Action</th>
+              <th scope="col" class="px-1 py-3 font-bold">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -292,9 +316,15 @@
               >
                 {{ item.schedule_id }}
               </th>
-              <td class="px-1 text-xs py-4">{{ item.ship_name }}</td>
-              <td class="px-1 text-xs py-4">{{ item.departure_port }}</td>
-              <td class="px-1 text-xs py-4">{{ item.arrival_port }}</td>
+              <td class="px-1 text-xs py-4">
+                {{ item.ship_name }}
+              </td>
+              <td class="px-1 text-xs py-4">
+                {{ item.departure_port }}
+              </td>
+              <td class="px-1 text-xs py-4">
+                {{ item.arrival_port }}
+              </td>
               <td class="px-1 text-xs py-4">
                 {{ formatDateTime(item.departure_time) }}
               </td>
@@ -306,33 +336,32 @@
                 {{ item.user_id + "_" + item.pilot_name }}
               </td>
 
-              <td class="px-6 text-xs py-4">{{ item.status }}</td>
-              <td class="px-6 text-xs py-4">
+              <td class="px-1 text-xs py-4">{{ item.status }}</td>
+              <td class="px-1 text-xs py-4">
                 {{ formatDateTime(item.created_at) }}
               </td>
-              <td class="px-6 text-xs py-4">
+              <td class="px-1 text-xs py-4">
                 {{ formatDateTime(item.updated_at) }}
               </td>
 
-              <td class="px-6 py-4">
+              <td class="px-1 text-xs py-4">
                 <router-link
                   class="text-blue-600 hover:text-blue-800 font-medium"
                 >
-                  Edit
+                  View
                 </router-link>
-                |
-                <button
-                  class="text-red-600 hover:text-red-800 font-medium"
-                  @click="handleDeleteschedule(item.schedule_id)"
-                >
-                  Delete
-                </button>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+    <!-- Pagination -->
+    <PaginationComponent
+      :pageCount="totalPagesData"
+      :currentPage="currentPage"
+      @page-change="getUsers"
+    />
   </div>
 </template>
 
@@ -343,14 +372,26 @@ import scheduleService from "../../services/schedule-services";
 import shipService from "../../services/ship-services";
 import userServices from "../../services/user-services";
 import portService from "../../services/port-services";
+import PaginationComponent from "@/components/Pagination.vue";
+
 import Swal from "sweetalert2";
 const formatDateTime = formateDate.formatDateTime;
 const toSqlDateTime = formateDate.toSqlDateTime;
+const currentPage = ref(1);
+const keyword = ref("");
 const schedulesData = ref([]);
-const fetchschedules = async () => {
+const totalPagesData = ref(1);
+
+const fetchschedules = async (page) => {
   try {
-    const res = await scheduleService.getSchedules();
+    currentPage.value = page;
+    const res = await scheduleService.getSchedules({
+      page,
+      keyword: keyword.value,
+    });
     schedulesData.value = res.data.schedules;
+    totalPagesData.value = res.data.totalPages;
+
     console.log("Fetched schedules:", schedulesData.value);
   } catch (error) {
     console.error("Error fetching schedules:", error);
@@ -388,13 +429,29 @@ const submitSchedule = async () => {
       departure_time: toSqlDateTime(form.value.departure_time),
       arrival_time: toSqlDateTime(form.value.arrival_time),
     };
+
     const res = await scheduleService.createSchedule(payload);
-    console.log("schedule created successfully:", res.data);
+
+    // ✅ chỉ chạy khi status 200
+    await Swal.fire({
+      icon: "success",
+      title: "Success",
+      text: res.data.message,
+    });
+
     closeModal();
-    fetchschedules(); // Refresh the list of schedules after adding a new one
-    alert("schedule created successfully!", { type: "success" });
+    fetchschedules();
   } catch (error) {
-    console.error("Error creating schedule:", error);
+    console.log("ERROR:", error);
+
+    // ✅ lấy message từ backend (400)
+    const message = error.response?.data?.message || "Something went wrong!";
+
+    await Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: message,
+    });
   }
 };
 
@@ -569,9 +626,19 @@ watch(
   { deep: true },
 );
 
+const searchSchedule = async () => {
+  currentPage.value = 1;
+  await fetchschedules(1);
+};
+
+const clearSearch = async () => {
+  keyword.value = "";
+  await fetchschedules(1);
+};
+
 onMounted(() => {
   fetchShips();
-  fetchschedules();
+  fetchschedules(1);
   fetchPilots();
   fetchPorts();
   fetchArrivalPorts();

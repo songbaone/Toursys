@@ -30,5 +30,27 @@ const scheduleController = {
       next(new ApiError(500, "Error fetching schedules: " + error.message));
     }
   },
+  async getPilotMonthlyStats(req, res) {
+    try {
+      const { month, year } = req.query;
+
+      const result = await scheduleService.getPilotMonthlyStats(
+        parseInt(month),
+        parseInt(year),
+      );
+
+      if (!result.status) {
+        return res.status(400).json(result);
+      }
+
+      return res.status(200).json(result);
+    } catch (error) {
+      return res.status(500).json({
+        status: false,
+        message: "Server error",
+        error: error.message,
+      });
+    }
+  },
 };
 module.exports = scheduleController;

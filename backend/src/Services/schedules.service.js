@@ -1,23 +1,20 @@
 const { knex } = require("../../db.config");
 require("dotenv").config();
+const validateSchedule = async (scheduleData, excludeId = null) => {
+  const { ship_id, pilot_id, departure_time, arrival_time } = scheduleData;
 
-const validateSchedule = async (scheduleData) => {
-  const {
-    ship_id,
-    pilot_id,
-
-    departure_time,
-    arrival_time,
-  } = scheduleData;
-
-  // base query kiểm tra trùng thời gian
   const timeOverlapQuery = (query) => {
     query
       .where("departure_time", "<", arrival_time)
       .where("arrival_time", ">", departure_time);
+
+    // loại trừ chính nó khi update
+    if (excludeId) {
+      query.where("schedule_id", "!=", excludeId);
+    }
   };
 
-  // 1. kiểm tra tàu
+  // check ship
   const shipConflict = await knex("SCHEDULES")
     .modify(timeOverlapQuery)
     .where("ship_id", ship_id)
@@ -30,7 +27,7 @@ const validateSchedule = async (scheduleData) => {
     };
   }
 
-  // 2. kiểm tra hoa tiêu
+  // check pilot
   const pilotConflict = await knex("SCHEDULES")
     .modify(timeOverlapQuery)
     .where("pilot_id", pilot_id)
@@ -154,21 +151,98 @@ const scheduleService = {
       };
     }
   },
-};
 
-// SELECT
-//     sc.schedule_id,
-//     sh.ship_name,
-//     dp.port_name AS departure_port,
-//     ap.port_name AS arrival_port,
-//     p.full_name,
-//     sc.departure_time,
-//     sc.arrival_time,
-//     sc.status
-// FROM SCHEDULES sc
-// JOIN SHIPS sh ON sc.ship_id = sh.ship_id
-// JOIN PORTS dp ON sc.departure_port_id = dp.port_id
-// JOIN PORTS ap ON sc.arrival_port_id = ap.port_id
-// LEFT JOIN users p ON sc.pilot_id = p.user_id;
+  // thống kê số lượt đi tàu theo tháng của mỗi hoa tiêu
+  async getPilotMonthlyStats(month, year) {
+    try {
+      if (!month || !year) {
+        return {
+          status: false,
+          message: "Month and year are required",
+        };
+      }
+
+      const stats = await knex("SCHEDULES as sc")
+        .leftJoin("users as u", "sc.pilot_id", "u.user_id")
+        .whereRaw("MONTH(sc.departure_time) = ?", [month])
+        .andWhereRaw("YEAR(sc.departure_time) = ?", [year])
+        .groupBy("sc.pilot_id", "u.full_name")
+        .select("sc.pilot_id", "u.full_name as pilot_name")
+        .count("* as total_trips")
+        .orderBy("total_trips", "desc");
+
+      return {
+        status: true,
+        message: "Pilot monthly statistics retrieved successfully",
+        data: stats,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        message: "Failed to retrieve statistics",
+        error: error.message,
+      };
+    }
+  },
+
+  // update schedule
+
+  async updateSchedule(data) {
+    try {
+      const { schedule_id } = data;
+
+      if (!schedule_id) {
+        return {
+          status: false,
+          message: "schedule_id is required",
+        };
+      }
+
+      // 1. kiểm tra tồn tại
+      const existingSchedule = await knex("SCHEDULES")
+        .where("schedule_id", schedule_id)
+        .first();
+
+      if (!existingSchedule) {
+        return {
+          status: false,
+          message: "Schedule not found",
+        };
+      }
+
+      // 2. merge data (quan trọng để tránh thiếu field)
+      const mergedData = {
+        ...existingSchedule,
+        ...data,
+      };
+
+      // 3. validate (loại trừ chính nó)
+      const validation = await validateSchedule(mergedData, schedule_id);
+
+      if (!validation.status) {
+        return validation;
+      }
+
+      // 4. update
+      await knex("SCHEDULES")
+        .where("schedule_id", schedule_id)
+        .update({
+          ...data,
+          updated_at: knex.fn.now(),
+        });
+
+      return {
+        status: true,
+        message: "Schedule updated successfully",
+      };
+    } catch (error) {
+      return {
+        status: false,
+        message: "Failed to update schedule",
+        error: error.message,
+      };
+    }
+  },
+};
 
 module.exports = scheduleService;
