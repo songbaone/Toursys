@@ -17,6 +17,8 @@ const userService = {
       const passwordHash = await bcrypt.hash(password, salt);
       accountData.password = passwordHash;
       accountData.salt = salt;
+      console.log("accountData:", accountData);
+      console.log("password:", password);
       const [user] = await knex("users")
         .insert(accountData)
         .returning(["user_id", "full_name", "email"]);

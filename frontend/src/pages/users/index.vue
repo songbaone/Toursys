@@ -269,6 +269,7 @@ const userData = ref([]);
 
 const showModal = ref(false);
 const DEFAULT_PASSWORD = import.meta.env.VITE_PASSWORD_DEFAULT;
+console.log("ENV:", import.meta.env.VITE_PASSWORD_DEFAULT);
 const form = ref({
   full_name: "",
   email: "",
@@ -278,6 +279,7 @@ const form = ref({
   role_id: "SA",
   status: "ACTIVE",
 });
+console.log("FORM SUBMIT:", form.value);
 
 const openModal = () => {
   showModal.value = true;
@@ -294,6 +296,7 @@ const resetForm = () => {
     email: "",
     phone: "",
     gender: "",
+    password: DEFAULT_PASSWORD,
     role_id: "SA",
     status: "ACTIVE",
   };

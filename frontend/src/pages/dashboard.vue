@@ -2,24 +2,35 @@
   <div class="p-6 space-y-6">
     <!-- 🔥 FILTER -->
     <div class="flex gap-4">
-      <input v-model="month" type="number" min="1" max="12" class="input" />
-      <input v-model="year" type="number" class="input" />
-      <button @click="fetchStats" class="btn">Thống kê</button>
+      <input
+        v-model="month"
+        type="number"
+        min="1"
+        max="12"
+        class="rounded-2xl"
+      />
+      <input v-model="year" type="number" class="rounded-2xl" />
+      <button
+        @click="fetchStats"
+        class="bg-blue-600 text-white pl-5 pr-5 rounded-2xl cursor-pointer hover:bg-blue-400"
+      >
+        Lọc
+      </button>
     </div>
 
     <!-- 📊 KPI CARDS -->
     <div class="grid grid-cols-3 gap-4">
-      <div class="card">
+      <div class="p-4 bg-white rounded">
         <p class="text-gray-500">Total Trips</p>
         <h2 class="text-2xl font-bold">{{ totalTrips }}</h2>
       </div>
 
-      <div class="card">
+      <div class="p-4 bg-white rounded">
         <p class="text-gray-500">Active Pilots</p>
         <h2 class="text-2xl font-bold">{{ stats.length }}</h2>
       </div>
 
-      <div class="card">
+      <div class="p-4 bg-white rounded">
         <p class="text-gray-500">Top Pilot</p>
         <h2 class="text-xl font-bold">
           {{ stats[0]?.pilot_name || "-" }}
@@ -28,50 +39,54 @@
     </div>
 
     <!-- 📈 CHART -->
-    <div class="card">
+    <div class="p-4 bg-white rounded">
       <Bar v-if="chartData" :data="chartData" :options="chartOptions" />
     </div>
 
     <!-- 🔍 SEARCH -->
-    <input v-model="search" placeholder="Tìm pilot..." class="input w-full" />
+    <input
+      v-model="search"
+      placeholder="Tìm pilot..."
+      class="input w-full p-2 rounded-2xl border"
+    />
 
     <!-- 📋 TABLE -->
-    <div class="card">
-      <table class="w-full border">
-        <thead>
-          <tr class="bg-gray-100">
-            <th class="p-2 border">#</th>
-            <th class="p-2 border">Pilot</th>
-            <th class="p-2 border">Trips</th>
+
+    <div
+      class="relative shrink-0 bg-neutral-primary-soft shadow-xs rounded-base border border-default overflow-x-auto"
+    >
+      <table class="w-full">
+        <thead
+          class="w-full whitespace-nowrap text-xs text-left rtl:text-right text-body"
+        >
+          <tr>
+            <th scope="col" class="px-6 py-3 font-bold border">No.</th>
+            <th scope="col" class="px-6 py-3 font-bold border">Pilot</th>
+            <th scope="col" class="px-6 py-3 font-bold border">Trips</th>
           </tr>
         </thead>
         <tbody>
           <tr
             v-for="(item, index) in paginatedStats"
             :key="item.pilot_id"
-            :class="{ 'bg-yellow-100': index === 0 }"
+            :class="{
+              'bg-yellow-100 border-b border-default hover:bg-blue-50 hover:cursor-pointer transition':
+                index === 0,
+            }"
           >
-            <td class="p-2 border text-center">
+            <th
+              scope="row"
+              class="px-6 py-4 font-bold text-heading whitespace-nowrap border"
+            >
               {{ (currentPage - 1) * pageSize + index + 1 }}
-            </td>
-            <td class="p-2 border">{{ item.pilot_name }}</td>
-            <td class="p-2 border text-center">
+            </th>
+            <td class="px-6 py-4 border">{{ item.pilot_name }}</td>
+            <td class="px-6 py-4 border">
               {{ item.total_trips }}
             </td>
           </tr>
         </tbody>
       </table>
-
-      <!-- PAGINATION -->
-      <div class="flex justify-end mt-4 gap-2">
-        <button @click="currentPage--" :disabled="currentPage === 1">
-          Prev
-        </button>
-        <span>Page {{ currentPage }}</span>
-        <button @click="currentPage++" :disabled="currentPage >= totalPages">
-          Next
-        </button>
-      </div>
     </div>
   </div>
 </template>
@@ -111,10 +126,6 @@ const filteredStats = computed(() =>
   ),
 );
 
-const totalPages = computed(() =>
-  Math.ceil(filteredStats.value.length / pageSize),
-);
-
 const paginatedStats = computed(() => {
   const start = (currentPage.value - 1) * pageSize;
   return filteredStats.value.slice(start, start + pageSize);
@@ -126,6 +137,14 @@ const chartOptions = {
   responsive: true,
   plugins: {
     legend: { display: false },
+  },
+  scales: {
+    x: {
+      beginAtZero: true,
+      ticks: {
+        precision: 0,
+      },
+    },
   },
 };
 
@@ -169,23 +188,3 @@ const fetchStats = async () => {
   }
 };
 </script>
-
-<style scoped>
-.input {
-  border: 1cm;
-  padding: 2px;
-  border-radius: 14px;
-}
-.btn {
-  background: blue;
-  color: white;
-  padding: 2px;
-
-  border-radius: 14px;
-}
-.card {
-  background: white;
-  padding: 4;
-  box-shadow: inset;
-}
-</style>
