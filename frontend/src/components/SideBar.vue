@@ -147,26 +147,10 @@
           </button>
         </div>
         <div class="ml-3">
-          <p class="font-semibold text-sm">Le Thanh Nam</p>
           <p class="text-sm text-gray-300">Admin</p>
 
           <a class="underline text-sm" href="/home">Logout</a>
         </div>
-      </div>
-
-      <!-- SETTINGS -->
-      <div class="flex mt-4">
-        <button
-          class="cursor-pointer bg-linear-to-tr from-blue-900 via-violet-700 to-violet-400 flex gap-2 px-4 py-2 rounded-2xl hover:bg-linear-to-br w-full mt-auto"
-          type="button"
-          href=""
-        >
-          <span>
-            <font-awesome-icon icon="fa-solid fa-wrench" style="color: #ffffff"
-          /></span>
-
-          <span>Settings</span>
-        </button>
       </div>
     </div>
   </div>
