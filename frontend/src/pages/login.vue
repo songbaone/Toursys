@@ -42,7 +42,7 @@
             <button
               type="submit"
               :disabled="loading"
-              class="text-white w-full bg-brand disabled:opacity-60"
+              class="text-white w-full bg-brand disabled:opacity-60 rounded-2xl"
             >
               <span v-if="loading">Đang đăng nhập...</span>
               <span v-else>Submit</span>

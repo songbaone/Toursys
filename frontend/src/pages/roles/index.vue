@@ -126,7 +126,10 @@
               </th>
               <td class="px-6 py-4">{{ item.role_name }}</td>
               <td class="px-6 py-4">{{ item.description }}</td>
-              <td class="px-6 py-4">{{ item.status }}</td>
+              <td class="px-6 py-4">
+                <span v-if="item.status == 0">Tạm Ngưng</span>
+                <span v-if="item.status == 1">Đang hoạt động</span>
+              </td>
               <td class="px-6 py-4">{{ formatDateTime(item.created_at) }}</td>
               <td class="px-6 py-4">
                 <router-link
