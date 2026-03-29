@@ -7,7 +7,7 @@
           SCHEDULES MANAGEMENT
         </h1>
       </div>
-      <div class="flex gap-2">
+      <div class="flex gap-2 items-center">
         <input
           v-model="keyword"
           @keyup.enter="searchSchedule"
@@ -31,6 +31,7 @@
           Clear
         </button>
       </div>
+
       <div>
         <button
           @click="openModal"
@@ -271,6 +272,44 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="flex gap-2 p-4">
+      <h2 class="items-center justify-center flex">Select departure date:</h2>
+      <!-- 🔥 FILTER DATE -->
+      <input
+        v-model="day"
+        type="number"
+        min="1"
+        max="31"
+        class="text-sm border rounded px-2 py-2 w-16"
+        placeholder="DD"
+      />
+
+      <input
+        v-model="month"
+        type="number"
+        min="1"
+        max="12"
+        class="text-sm border rounded px-2 py-2 w-16"
+        placeholder="MM"
+      />
+
+      <input
+        v-model="year"
+        type="number"
+        class="text-sm border rounded px-2 py-2 w-20"
+        placeholder="YYYY"
+      />
+
+      <!-- 🔥 EXPORT BUTTON -->
+      <button
+        @click="exportExcel"
+        :disabled="!day || !month || !year || loadingExport"
+        class="bg-green-600 text-white px-4 py-2 rounded-md disabled:opacity-50"
+      >
+        {{ loadingExport ? "Đang export..." : "Export Excel" }}
+      </button>
     </div>
 
     <!-- =======================DATA TABLE USERS -->
@@ -634,6 +673,54 @@ const searchSchedule = async () => {
 const clearSearch = async () => {
   keyword.value = "";
   await fetchschedules(1);
+};
+const loadingExport = ref(false);
+const day = ref(new Date().getDate());
+const month = ref(new Date().getMonth() + 1);
+const year = ref(new Date().getFullYear());
+const exportExcel = async () => {
+  try {
+    loadingExport.value = true;
+
+    const response = await scheduleService.exportExcel({
+      day: day.value,
+      month: month.value,
+      year: year.value,
+    });
+
+    const blob = new Blob([response.data]);
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute(
+      "download",
+      `schedule_${day.value}_${month.value}_${year.value}.xlsx`,
+    );
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    // ✅ success notification (optional xịn hơn)
+    Swal.fire({
+      icon: "success",
+      title: "Export thành công",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+  } catch (error) {
+    console.error("Export error:", error);
+
+    Swal.fire({
+      icon: "error",
+      title: "Export failed",
+      text: "Không thể xuất file Excel!",
+    });
+  } finally {
+    // ✅ LUÔN reset
+    loadingExport.value = false;
+  }
 };
 
 onMounted(() => {

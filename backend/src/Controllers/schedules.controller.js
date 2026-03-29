@@ -52,5 +52,39 @@ const scheduleController = {
       });
     }
   },
+
+  async exportSchedules(req, res) {
+    try {
+      const { day, month, year } = req.query;
+
+      const result = await scheduleService.exportSchedulesToExcel({
+        day,
+        month,
+        year,
+      });
+
+      if (!result.status) {
+        return res.status(400).json(result);
+      }
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      );
+
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=schedules_${day || ""}_${month || ""}_${year || ""}.xlsx`,
+      );
+
+      await result.workbook.xlsx.write(res);
+      res.end();
+    } catch (error) {
+      res.status(500).json({
+        status: false,
+        message: "Export error",
+      });
+    }
+  },
 };
 module.exports = scheduleController;

@@ -1,4 +1,6 @@
 const { knex } = require("../../db.config");
+const ExcelJS = require("exceljs");
+
 require("dotenv").config();
 const validateSchedule = async (scheduleData, excludeId = null) => {
   const { ship_id, pilot_id, departure_time, arrival_time } = scheduleData;
@@ -239,6 +241,81 @@ const scheduleService = {
       return {
         status: false,
         message: "Failed to update schedule",
+        error: error.message,
+      };
+    }
+  },
+
+  async exportSchedulesToExcel({ day, month, year }) {
+    try {
+      let query = knex("SCHEDULES as sc")
+        .join("SHIPS as sh", "sc.ship_id", "sh.ship_id")
+        .join("PORTS as dp", "sc.departure_port_id", "dp.port_id")
+        .join("PORTS as ap", "sc.arrival_port_id", "ap.port_id")
+        .leftJoin("users as p", "sc.pilot_id", "p.user_id");
+
+      // 🔥 FILTER LINH HOẠT
+      if (year) {
+        query = query.whereRaw("YEAR(sc.departure_time) = ?", [year]);
+      }
+
+      if (month) {
+        query = query.whereRaw("MONTH(sc.departure_time) = ?", [month]);
+      }
+
+      if (day) {
+        query = query.whereRaw("DAY(sc.departure_time) = ?", [day]);
+      }
+
+      const schedules = await query
+        .select(
+          "sc.schedule_id",
+          "sh.ship_name",
+          "dp.port_name as departure_port",
+          "ap.port_name as arrival_port",
+          "p.full_name as pilot_name",
+          "sc.departure_time",
+          "sc.arrival_time",
+          "sc.status",
+          "sc.created_at",
+        )
+        .orderBy("sc.departure_time", "desc");
+
+      // 🧾 Excel
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Schedules");
+
+      worksheet.columns = [
+        { header: "ID", key: "schedule_id", width: 10 },
+        { header: "Ship", key: "ship_name", width: 20 },
+        { header: "Departure Port", key: "departure_port", width: 25 },
+        { header: "Arrival Port", key: "arrival_port", width: 25 },
+        { header: "Pilot", key: "pilot_name", width: 25 },
+        { header: "Departure Time", key: "departure_time", width: 25 },
+        { header: "Arrival Time", key: "arrival_time", width: 25 },
+        { header: "Status", key: "status", width: 15 },
+        { header: "Created At", key: "created_at", width: 25 },
+      ];
+
+      schedules.forEach((item) => {
+        worksheet.addRow({
+          ...item,
+          departure_time: new Date(item.departure_time).toLocaleString(),
+          arrival_time: new Date(item.arrival_time).toLocaleString(),
+        });
+      });
+
+      // style header
+      worksheet.getRow(1).font = { bold: true };
+
+      return {
+        status: true,
+        workbook,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        message: "Export failed",
         error: error.message,
       };
     }
