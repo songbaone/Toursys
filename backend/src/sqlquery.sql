@@ -12,6 +12,8 @@ CREATE TABLE USERS
 (
     user_id INT IDENTITY PRIMARY KEY,
     role_id CHAR(10),
+    password NVARCHAR(255),
+    salt NVARCHAR(255);
     -- AD, PI
     full_name NVARCHAR(60) NOT NULL,
     birthday DATE,
