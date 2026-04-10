@@ -170,7 +170,7 @@ const updateship = async () => {
   try {
     await shipsService.updateShip(route.params.ship_id, form.value);
     alert("Update ship successfully!");
-    router.push("/ships");
+router.push({ name: "admin.ships" });
   } catch (error) {
     console.error(error);
     alert("Update failed!");

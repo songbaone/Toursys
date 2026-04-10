@@ -157,7 +157,7 @@ const updateUser = async () => {
   try {
     await UsersService.updateUser(form.value.email, form.value);
     alert("Update user successfully!");
-    router.push("/users");
+    router.push({ name: "admin.users" });  
   } catch (error) {
     console.error(error);
     alert("Update failed!");
