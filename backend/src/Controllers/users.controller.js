@@ -16,8 +16,10 @@ const userController = {
     try {
       const { email, role_id, password } = req.body;
       const result = await userService.loginUser(email, password, role_id);
+      console.log(result)
       res.json(result);
     } catch (error) {
+      console.log(error)
       next(new ApiError(401, error.message));
     }
   },

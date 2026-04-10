@@ -69,7 +69,7 @@ const handleLogin = async () => {
 
   loading.value = true;
   try {
-    const res = await LoginService.login(email.value, password.value, "SA");
+    const res = await LoginService.login(email.value, password.value, "AD");
 
     if (res.status === 200) {
       console.log("Login success:", res.data);
